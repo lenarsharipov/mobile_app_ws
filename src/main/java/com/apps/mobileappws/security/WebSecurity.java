@@ -2,16 +2,18 @@ package com.apps.mobileappws.security;
 
 import com.apps.mobileappws.service.UserService;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
+@Configuration
 @EnableWebSecurity
 public class WebSecurity {
-
     private final UserService userService;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
@@ -22,7 +24,6 @@ public class WebSecurity {
 
     @Bean
     protected SecurityFilterChain configure(HttpSecurity http) throws Exception {
-
         // Configure AuthenticationManagerBuilder
         AuthenticationManagerBuilder authenticationManagerBuilder
                 = http.getSharedObject(AuthenticationManagerBuilder.class);
@@ -31,10 +32,18 @@ public class WebSecurity {
                 .userDetailsService(userService)
                 .passwordEncoder(bCryptPasswordEncoder);
 
-        http.csrf().disable()
-                .authorizeRequests().antMatchers(HttpMethod.POST, "/users")
+        // custom Authentication Manager
+        AuthenticationManager authenticationManager = authenticationManagerBuilder.build();
+
+        http
+                .cors().and()
+                .csrf().disable().authorizeHttpRequests()
+                .requestMatchers(HttpMethod.POST, SecurityConstants.SIGN_UP_URL)
                 .permitAll()
-                .anyRequest().authenticated();
+                .anyRequest().authenticated()
+                .and()
+                .authenticationManager(authenticationManager) // security object must be updated with created custom Authentication Manager
+                .addFilter(new AuthenticationFilter(authenticationManager)); // registering created custom filter
 
         return http.build();
     }
