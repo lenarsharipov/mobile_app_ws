@@ -1,7 +1,7 @@
 package com.apps.mobileappws.io.entity;
 
-import jakarta.persistence.*;
 
+import javax.persistence.*;
 import java.io.Serial;
 import java.io.Serializable;
 
