@@ -1,5 +1,8 @@
 package com.apps.mobileappws.security;
 
+import com.apps.mobileappws.SpringApplicationContext;
+import com.apps.mobileappws.service.UserService;
+import com.apps.mobileappws.shared.dto.UserDto;
 import com.apps.mobileappws.ui.model.request.UserLoginRequestModel;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.Jwts;
@@ -56,7 +59,7 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
                                             FilterChain chain,
                                             Authentication authResult) {
         byte[] secretKeyBytes = Base64.getEncoder()
-                .encode(SecurityConstants.TOKEN_SECRET.getBytes());
+                .encode(SecurityConstants.getTokenSecret().getBytes());
         SecretKey secretKey =
                 new SecretKeySpec(
                         secretKeyBytes,
@@ -75,5 +78,9 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
                 SecurityConstants.HEADER_STRING,
                 SecurityConstants.TOKEN_PREFIX + token
         );
+
+        UserService userService = (UserService) SpringApplicationContext.getBean("userServiceImpl");
+        UserDto userDto = userService.getUser(userName);
+        response.addHeader("UserId", userDto.getUserId());
     }
 }
