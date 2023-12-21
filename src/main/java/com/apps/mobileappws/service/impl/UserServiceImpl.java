@@ -1,14 +1,15 @@
 package com.apps.mobileappws.service.impl;
 
-import com.apps.mobileappws.UserRepository;
+import com.apps.mobileappws.io.repository.UserRepository;
 import com.apps.mobileappws.exceptions.UserServiceException;
 import com.apps.mobileappws.io.entity.UserEntity;
 import com.apps.mobileappws.service.UserService;
 import com.apps.mobileappws.shared.Utils;
+import com.apps.mobileappws.shared.dto.AddressDto;
 import com.apps.mobileappws.shared.dto.UserDto;
 import com.apps.mobileappws.ui.model.response.ErrorMessages;
-import com.apps.mobileappws.ui.model.response.UserRest;
 import jakarta.transaction.Transactional;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -44,18 +45,26 @@ public class UserServiceImpl implements UserService {
             throw new RuntimeException("Record already exists");
         }
 
-        UserEntity userEntity = new UserEntity();
-        BeanUtils.copyProperties(userDto, userEntity);
+        List<AddressDto> updatedAddresses =
+                userDto.getAddresses()
+                        .stream()
+                        .peek(a -> {
+                            a.setAddressId(utils.generateAddressId(30));
+                            a.setUserDetails(userDto);
+                        })
+                        .toList();
+        userDto.setAddresses(updatedAddresses);
+
+        ModelMapper modelMapper = new ModelMapper();
+        UserEntity userEntity = modelMapper.map(userDto, UserEntity.class);
 
         String publicUserId = utils.generateUserId(30);
         userEntity.setUserId(publicUserId);
         userEntity.setEncryptedPassword(bCryptPasswordEncoder.encode(userDto.getPassword()));
 
         UserEntity storedUserDetails = userRepository.save(userEntity);
-        UserDto returnValue = new UserDto();
-        BeanUtils.copyProperties(storedUserDetails, returnValue);
 
-        return returnValue;
+        return modelMapper.map(storedUserDetails, UserDto.class);
     }
 
     @Override
@@ -75,9 +84,9 @@ public class UserServiceImpl implements UserService {
         if (userEntity == null) {
             throw new UserServiceException(ErrorMessages.NO_RECORD_FOUND.getErrorMessage());
         }
-        UserDto returnValue = new UserDto();
-        BeanUtils.copyProperties(userEntity, returnValue);
-        return returnValue;
+
+        ModelMapper modelMapper = new ModelMapper();
+        return  modelMapper.map(userEntity, UserDto.class);
     }
 
     @Override

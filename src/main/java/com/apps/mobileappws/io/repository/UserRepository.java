@@ -1,4 +1,4 @@
-package com.apps.mobileappws;
+package com.apps.mobileappws.io.repository;
 
 import com.apps.mobileappws.io.entity.UserEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
