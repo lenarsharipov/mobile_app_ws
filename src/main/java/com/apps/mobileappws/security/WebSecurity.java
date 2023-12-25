@@ -45,6 +45,8 @@ public class WebSecurity {
                 .csrf().disable().authorizeHttpRequests()
                 .requestMatchers(HttpMethod.POST, SecurityConstants.SIGN_UP_URL)
                 .permitAll()
+                .requestMatchers(HttpMethod.GET, SecurityConstants.VERIFICATION_EMAIL_URL)
+                .permitAll()
                 .anyRequest().authenticated()
                 .and()
                 .authenticationManager(authenticationManager) // security object must be updated with created custom Authentication Manager
