@@ -19,6 +19,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("users")
+//    @CrossOrigin(origins = "https://www.google.com")
 public class UserController {
     private final UserService userService;
     private final AddressService addressService;
@@ -40,6 +41,7 @@ public class UserController {
             consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE},
             produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE}
     )
+//    @CrossOrigin(origins = "https://www.google.com")
     public UserRest createUser(@RequestBody UserDetailsRequestModel userDetails) throws Exception {
         if (userDetails.getFirstName().isEmpty()) {
             throw new UserServiceException(

@@ -3,7 +3,11 @@ package com.apps.mobileappws.security;
 import com.apps.mobileappws.service.UserService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpHeaders;
+
+import static org.springframework.http.HttpHeaders.*;
+import static org.springframework.http.HttpMethod.*;
+
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -11,6 +15,11 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity
@@ -43,9 +52,9 @@ public class WebSecurity {
         http
                 .cors().and()
                 .csrf().disable().authorizeHttpRequests()
-                .requestMatchers(HttpMethod.POST, SecurityConstants.SIGN_UP_URL)
+                .requestMatchers(POST, SecurityConstants.SIGN_UP_URL)
                 .permitAll()
-                .requestMatchers(HttpMethod.GET, SecurityConstants.VERIFICATION_EMAIL_URL)
+                .requestMatchers(GET, SecurityConstants.VERIFICATION_EMAIL_URL)
                 .permitAll()
                 .anyRequest().authenticated()
                 .and()
@@ -60,6 +69,26 @@ public class WebSecurity {
 
         return http.build();
 
+    }
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        final CorsConfiguration configuration = new CorsConfiguration();
+
+        configuration.setAllowedOrigins(List.of("https://www.google.com"));
+        configuration.setAllowedMethods(
+                List.of(
+                        GET.name(),
+                        POST.name(),
+                        PUT.name(),
+                        DELETE.name()));
+        configuration.setAllowCredentials(true);
+        configuration.setAllowedHeaders(List.of(AUTHORIZATION, CACHE_CONTROL, CONTENT_TYPE));
+
+        final var source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+
+        return source;
     }
 
 }
