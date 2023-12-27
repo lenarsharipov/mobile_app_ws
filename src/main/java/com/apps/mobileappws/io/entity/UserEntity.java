@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 
 import java.io.Serial;
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.List;
 
 @Entity(name = "users")
@@ -21,18 +22,30 @@ public class UserEntity implements Serializable {
 
     @Column(nullable = false, length = 50)
     private String firstName;
+
     @Column(nullable = false, length = 50)
     private String lastName;
+
     @Column(nullable = false, length = 120)
     private String email;
+
     @Column(nullable = false)
     private String encryptedPassword;
+
     private String emailVerificationToken;
+
     @Column(nullable = false)
     private Boolean emailVerificationStatus = false;
 
     @OneToMany(mappedBy = "userDetails", cascade = CascadeType.ALL) // this is a parent object
     private List<AddressEntity> addresses;
+
+    @ManyToMany(cascade = CascadeType.PERSIST, fetch = FetchType.EAGER)
+    @JoinTable(
+            name = "users_roles",
+            joinColumns = @JoinColumn(name = "user_id", referencedColumnName = "id"),
+            inverseJoinColumns = @JoinColumn(name= "roles_id",  referencedColumnName = "id"))
+    private Collection<RoleEntity> roles;
 
     public long getId() {
         return id;
@@ -104,5 +117,13 @@ public class UserEntity implements Serializable {
 
     public void setAddresses(List<AddressEntity> addresses) {
         this.addresses = addresses;
+    }
+
+    public Collection<RoleEntity> getRoles() {
+        return roles;
+    }
+
+    public void setRoles(Collection<RoleEntity> roles) {
+        this.roles = roles;
     }
 }
